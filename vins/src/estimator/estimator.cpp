@@ -349,7 +349,8 @@ void Estimator::processMeasurements()
 
             std_msgs::msg::Header header;
             header.frame_id = "world";
-            header.stamp = rclcpp::Time(feature.first);
+            // header.stamp = rclcpp::Time(feature.first);
+            header.stamp = rclcpp::Time(curTime * 1e9);
 
             pubOdometry(*this, header);
             // cout << "5-1" << endl;
@@ -1162,13 +1163,7 @@ void Estimator::optimization()
 
     ceres::Solver::Options options;
 
-    if (USE_GPU_CERES)
-        // std::cout << "1" << endl;
-        options.dense_linear_algebra_library_type = ceres::CUDA;
-    else
-        // std::cout << "2" << endl;
-        options.linear_solver_type = ceres::DENSE_SCHUR;
-
+    options.linear_solver_type = ceres::DENSE_SCHUR;
     //options.num_threads = 2;
     options.trust_region_strategy_type = ceres::DOGLEG;
     options.max_num_iterations = NUM_ITERATIONS;

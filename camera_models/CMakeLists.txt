@@ -15,6 +15,7 @@ find_package(Boost REQUIRED COMPONENTS filesystem program_options system)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(OpenCV REQUIRED)
+set(Ceres_DIR "/usr/local/ceres/2.1.0/lib/cmake/Ceres")   
 find_package(Ceres REQUIRED)
 include_directories(${CERES_INCLUDE_DIRS})
 

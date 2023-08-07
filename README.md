@@ -4,21 +4,14 @@
 
 ### Notices
 - code has been updated so that the vins package can be executed via ros2 run or ros2 launch
-- but Rviz config cannot be saved due to some issue.. still fixing
-- GPU enable/disable features also have been added: refer [EuRoC config](https://github.com/zinuok/VINS-Fusion-ROS2/blob/main/config/euroc/euroc_stereo_imu_config.yaml#L19-L21) (refered from [here](https://github.com/pjrambo/VINS-Fusion-gpu) and [here](https://github.com/pjrambo/VINS-Fusion-gpu/issues/33#issuecomment-1097642597))
-  - The GPU version has some CUDA library [dependencies: OpenCV with CUDA](https://github.com/zinuok/VINS-Fusion-ROS2/blob/main/vins/src/featureTracker/feature_tracker.h#L21-L23). Therefore, if it is a bothersome to you and only need the cpu version, use the following commit version: .
-  ```bash
-  cd $(YOUR_LOCAL_PATH_TO_THIS_REPO)
-  git checkout b02d4154e3d72fcd674f62a6347770cfc546fe48
-  ```
+- but now it has dependency on Opencv 4.0.x
 
 ### Prerequisites
 - **System**
   - Ubuntu 20.04
   - ROS2 foxy
 - **Libraries**
-  - OpenCV 3.4.1 (with CUDA enabled option)
-  - OpenCV 3.4.1-contrib
+  - OpenCV 4.0.x
   - [Ceres Solver-2.1.0](http://ceres-solver.org/installation.html) (you can refer [here](https://github.com/zinuok/VINS-Fusion#-ceres-solver-1); just edit 1.14.0 to 2.1.0 for install.)
   - [Eigen-3.3.9](https://github.com/zinuok/VINS-Fusion#-eigen-1)
 
@@ -29,26 +22,35 @@
 ```bash
 chmod +x realsense_install.sh
 bash realsense_install.sh
+- or you can install it by apt refer to wiki
 ```
 
 
 ### build
 ```bash
 cd $(PATH_TO_YOUR_ROS2_WS)/src
-git clone https://github.com/zinuok/VINS-Fusion-ROS2
+git clone https://github.com/huyating99/vins_mapping
 cd ..
+edit Ceres_Dir and output_path in yaml
 colcon build --symlink-install && source ./install/setup.bash && source ./install/local_setup.bash
 ```
 
 ### run
 ```bash
 # vins
-ros2 run vins $(PATH_TO_YOUR_VINS_CONFIG_FILE)
+ros2 run vins vins_node $(PATH_TO_YOUR_VINS_CONFIG_FILE)
 
-# Rviz2 visualization
-ros2 launch vins vins_rviz.launch.xml
+# loop_fusion
+ros2 run loop_fusion loop_fusion_node $(PATH_TO_YOUR_VINS_CONFIG_FILE)
+
+# Rviz2 visualization in vins_mapping/config
+ros2 run rviz2 rviz2 -dvins_rviz_config_loop.rviz
+
+# rosbag play 
+ros2 bag play MH_01_easy.db3
 ```
-
+# rosbag record 
+ros2 bag record -o rs_rb5_room /camera aligned_depth_to_color/image_raw /camera/aligned_depth_to_color/camera_info /camera/color/image_raw /camera/imu /tf
 
 ## play bag recorded at ROS1
 Unfortunately, you can't just play back the bag file recorded at ROS1. 
@@ -59,21 +61,20 @@ The bag file at ROS2 needs the folder with some meta data for each bag file, whi
 pip install rosbags
 ```
 
+# draw traj using evo
+evo_traj tum ./rs_rb5_office_01_vio.csv --ref=./rs_rb5_office_01_vio_loop.csv -p --plot_mode=xyz -a --save_table rs_rb5_office_01
+
 - run
 ```bash
 export PATH=$PATH:~/.local/bin
 rosbags-convert foo.bag --dst /path/to/bar
 ```
 
-
-
-
-
-
 ## Original Readme:
 
 ## 8. Acknowledgements
 We use [ceres solver](http://ceres-solver.org/) for non-linear optimization and [DBoW2](https://github.com/dorian3d/DBoW2) for loop detection, a generic [camera model](https://github.com/hengli/camodocal) and [GeographicLib](https://geographiclib.sourceforge.io/).
+
 
 ## 9. License
 The source code is released under [GPLv3](http://www.gnu.org/licenses/) license.

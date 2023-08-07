@@ -156,19 +156,16 @@ void pubOdometry(const Estimator &estimator, const std_msgs::msg::Header &header
         // write result to file
         ofstream foutC(VINS_RESULT_PATH, ios::app);
         foutC.setf(ios::fixed, ios::floatfield);
-        foutC.precision(0);
-        foutC << header.stamp.sec + header.stamp.nanosec * (1e-9) << ",";
-        foutC.precision(5);
-        foutC << estimator.Ps[WINDOW_SIZE].x() << ","
-              << estimator.Ps[WINDOW_SIZE].y() << ","
-              << estimator.Ps[WINDOW_SIZE].z() << ","
-              << tmp_Q.w() << ","
-              << tmp_Q.x() << ","
-              << tmp_Q.y() << ","
-              << tmp_Q.z() << ","
-              << estimator.Vs[WINDOW_SIZE].x() << ","
-              << estimator.Vs[WINDOW_SIZE].y() << ","
-              << estimator.Vs[WINDOW_SIZE].z() << "," << endl;
+        foutC.precision(6);
+        foutC << header.stamp.sec + header.stamp.nanosec * (1e-9) << " ";
+        foutC.precision(6);
+        foutC << estimator.Ps[WINDOW_SIZE].x() << " "
+              << estimator.Ps[WINDOW_SIZE].y() << " "
+              << estimator.Ps[WINDOW_SIZE].z() << " "
+              << tmp_Q.w() << " "
+              << tmp_Q.x() << " "
+              << tmp_Q.y() << " "
+              << tmp_Q.z() << endl;
         foutC.close();
         Eigen::Vector3d tmp_T = estimator.Ps[WINDOW_SIZE];
         printf("time: %f, t: %f %f %f q: %f %f %f %f \n", header.stamp.sec + header.stamp.nanosec * (1e-9),
@@ -472,7 +469,10 @@ void pubKeyframe(const Estimator &estimator)
         Quaterniond R = Quaterniond(estimator.Rs[i]);
 
         nav_msgs::msg::Odometry odometry;
-        odometry.header.stamp = rclcpp::Time(estimator.Headers[WINDOW_SIZE - 2]);
+        odometry.header.stamp = rclcpp::Time(estimator.Headers[WINDOW_SIZE - 2] * 1e9);
+        // cout << "estimator.Headers[WINDOW_SIZE - 2]: " << estimator.Headers[WINDOW_SIZE - 2] << endl;
+        // cout << "pubKeyframe header.stamp.sec: " << odometry.header.stamp.sec << endl;
+        // cout << "pubKeyframe header.stamp.nanosec: " << odometry.header.stamp.nanosec << endl;
         odometry.header.frame_id = "world";
         odometry.pose.pose.position.x = P.x();
         odometry.pose.pose.position.y = P.y();
@@ -487,7 +487,10 @@ void pubKeyframe(const Estimator &estimator)
 
 
         sensor_msgs::msg::PointCloud point_cloud;
-        point_cloud.header.stamp = rclcpp::Time(estimator.Headers[WINDOW_SIZE - 2]);
+        point_cloud.header.stamp = rclcpp::Time(estimator.Headers[WINDOW_SIZE - 2]*1e9);
+        // cout << "----estimator.Headers[WINDOW_SIZE - 2]: " << estimator.Headers[WINDOW_SIZE - 2] << endl;
+        // cout << "----pubKeyframe header.stamp.sec: " << point_cloud.header.stamp.sec << endl;
+        // cout << "----pubKeyframe header.stamp.nanosec: " << point_cloud.header.stamp.nanosec << endl;
         point_cloud.header.frame_id = "world";
         for (auto &it_per_id : estimator.f_manager.feature)
         {

@@ -15,6 +15,7 @@ find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
+set(Ceres_DIR "/usr/local/ceres/2.1.0/lib/cmake/Ceres")  
 find_package(Ceres REQUIRED)
 
 add_subdirectory(./ThirdParty/GeographicLib/)

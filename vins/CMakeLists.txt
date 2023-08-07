@@ -22,6 +22,7 @@ find_package(image_transport REQUIRED)
 
 
 find_package(OpenCV REQUIRED)
+set(Ceres_DIR "/usr/local/ceres/2.1.0/lib/cmake/Ceres")  
 find_package(Ceres REQUIRED)
 
 include_directories(${CERES_INCLUDE_DIRS})
@@ -83,7 +84,8 @@ install(
   DESTINATION lib/${PROJECT_NAME}
 )
 
-
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME})
 
 # Install binaries
 #install(TARGETS vins_node kitti_odom_test kitti_gps_test vins_lib

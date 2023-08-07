@@ -143,7 +143,7 @@ void sync_process()
 void imu_callback(const sensor_msgs::msg::Imu::SharedPtr imu_msg)
 {
     // std::cout << "IMU cb" << std::endl;
-
+    
     double t = imu_msg->header.stamp.sec + imu_msg->header.stamp.nanosec * (1e-9);
     double dx = imu_msg->linear_acceleration.x;
     double dy = imu_msg->linear_acceleration.y;

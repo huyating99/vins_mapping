@@ -103,7 +103,7 @@ void new_sequence()
 
 void image_callback(const sensor_msgs::msg::Image::SharedPtr image_msg)
 {
-    //ROS_INFO("image_callback!");
+    // cout << "image_callback! " << image_msg->header.stamp.sec << " "<< image_msg->header.stamp.nanosec <<endl;
     m_buf.lock();
     image_buf.push(image_msg);
     m_buf.unlock();
@@ -123,7 +123,7 @@ void image_callback(const sensor_msgs::msg::Image::SharedPtr image_msg)
 
 void point_callback(const sensor_msgs::msg::PointCloud::SharedPtr point_msg)
 {
-    //ROS_INFO("point_callback!");
+    // cout << "point_callback!" << point_msg->header.stamp.sec << " "<< point_msg->header.stamp.nanosec <<endl;
     m_buf.lock();
     point_buf.push(point_msg);
     m_buf.unlock();
@@ -159,6 +159,7 @@ void point_callback(const sensor_msgs::msg::PointCloud::SharedPtr point_msg)
 // only for visualization
 void margin_point_callback(const sensor_msgs::msg::PointCloud::SharedPtr point_msg)
 {
+    // cout << "margin_point_callback!" << endl;
     sensor_msgs::msg::PointCloud point_cloud;
     point_cloud.header = point_msg->header;
     for (unsigned int i = 0; i < point_msg->points.size(); i++)
@@ -179,7 +180,7 @@ void margin_point_callback(const sensor_msgs::msg::PointCloud::SharedPtr point_m
 
 void pose_callback(const nav_msgs::msg::Odometry::SharedPtr pose_msg)
 {
-    //ROS_INFO("pose_callback!");
+    // cout << "pose_callback!" << pose_msg->header.stamp.sec << " "<< pose_msg->header.stamp.nanosec <<endl;
     m_buf.lock();
     pose_buf.push(pose_msg);
     m_buf.unlock();
@@ -196,7 +197,7 @@ void pose_callback(const nav_msgs::msg::Odometry::SharedPtr pose_msg)
 
 void vio_callback(const nav_msgs::msg::Odometry::SharedPtr pose_msg)
 {
-    //ROS_INFO("vio_callback!");
+    // cout << "vio_callback!" << endl;
     Vector3d vio_t(pose_msg->pose.pose.position.x, pose_msg->pose.pose.position.y, pose_msg->pose.pose.position.z);
     Quaterniond vio_q;
     vio_q.w() = pose_msg->pose.pose.orientation.w;
@@ -236,6 +237,7 @@ void vio_callback(const nav_msgs::msg::Odometry::SharedPtr pose_msg)
 
 void extrinsic_callback(const nav_msgs::msg::Odometry::SharedPtr pose_msg)
 {
+    // cout << "extrinsic_callback!" << endl;
     m_process.lock();
     tic = Vector3d(pose_msg->pose.pose.position.x,
                    pose_msg->pose.pose.position.y,
@@ -259,7 +261,11 @@ void process()
         m_buf.lock();
         if(!image_buf.empty() && !point_buf.empty() && !pose_buf.empty())
         {
-            if (image_buf.front()->header.stamp.sec + image_buf.front()->header.stamp.nanosec * (1e-9) 
+            // cout << setprecision(10);
+            // cout << "image_buf time: "<<image_buf.front()->header.stamp.sec << " " <<  image_buf.front()->header.stamp.nanosec  << endl;
+            // cout << "pose_buf time: "<<pose_buf.front()->header.stamp.sec << " " << image_buf.front()->header.stamp.nanosec << endl;
+            // cout << "point_buf time: "<<point_buf.front()->header.stamp.sec << " " << image_buf.front()->header.stamp.nanosec << endl;
+            if (image_buf.front()->header.stamp.sec + image_buf.front()->header.stamp.nanosec * (1e-9)
                     > pose_buf.front()->header.stamp.sec + pose_buf.front()->header.stamp.nanosec * (1e-9))
             {
                 pose_buf.pop();
@@ -280,7 +286,7 @@ void process()
                 pose_buf.pop();
                 while (!pose_buf.empty())
                     pose_buf.pop();
-                while (image_buf.front()->header.stamp.sec + image_buf.front()->header.stamp.nanosec * (1e-9) 
+                while (image_buf.front()->header.stamp.sec + image_buf.front()->header.stamp.nanosec * (1e-9)
                         < pose_msg->header.stamp.sec + pose_msg->header.stamp.nanosec * (1e-9))
                     image_buf.pop();
                 image_msg = image_buf.front();
@@ -295,11 +301,12 @@ void process()
         }
         m_buf.unlock();
 
-        if (pose_msg != NULL)
+        if (pose_msg != NULL && image_msg != NULL && point_msg != NULL)
         {
-            //printf(" pose time %f \n", pose_msg->header.stamp.sec);
-            //printf(" point time %f \n", point_msg->header.stamp.sec);
-            //printf(" image time %f \n", image_msg->header.stamp.sec);
+            // cout << "get information!" << endl;
+            // cout << "pose_msg time: "<< pose_msg->header.stamp.sec << " " << pose_msg->header.stamp.nanosec << endl;
+            // cout << "point_msg time: "<< point_msg->header.stamp.sec << " " << point_msg->header.stamp.nanosec << endl;
+            // cout << "image_msg time: "<< image_msg->header.stamp.sec << " " << image_msg->header.stamp.nanosec << endl;
             // skip fisrt few
             if (skip_first_cnt < SKIP_FIRST_CNT)
             {
@@ -332,7 +339,7 @@ void process()
             }
             else
                 ptr = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::MONO8);
-            
+
             cv::Mat image = ptr->image;
             // build keyframe
             Vector3d T = Vector3d(pose_msg->pose.pose.position.x,
@@ -491,12 +498,12 @@ int main(int argc, char **argv)
         load_flag = 1;
     }
 
-    auto sub_vio          = n->create_subscription<nav_msgs::msg::Odometry>("/vins_estimator/odometry", rclcpp::QoS(rclcpp::KeepLast(2000)), vio_callback);
+    auto sub_vio          = n->create_subscription<nav_msgs::msg::Odometry>("/odometry", rclcpp::QoS(rclcpp::KeepLast(2000)), vio_callback);
     auto sub_image        = n->create_subscription<sensor_msgs::msg::Image>(IMAGE_TOPIC, rclcpp::QoS(rclcpp::KeepLast(2000)), image_callback);
-    auto sub_pose         = n->create_subscription<nav_msgs::msg::Odometry>("/vins_estimator/keyframe_pose", rclcpp::QoS(rclcpp::KeepLast(2000)), pose_callback);
-    auto sub_extrinsic    = n->create_subscription<nav_msgs::msg::Odometry>("/vins_estimator/extrinsic", rclcpp::QoS(rclcpp::KeepLast(2000)), extrinsic_callback);
-    auto sub_point        = n->create_subscription<sensor_msgs::msg::PointCloud>("/vins_estimator/keyframe_point", rclcpp::QoS(rclcpp::KeepLast(2000)), point_callback);
-    auto sub_margin_point = n->create_subscription<sensor_msgs::msg::PointCloud>("/vins_estimator/margin_cloud", rclcpp::QoS(rclcpp::KeepLast(2000)), margin_point_callback);
+    auto sub_pose         = n->create_subscription<nav_msgs::msg::Odometry>("/keyframe_pose", rclcpp::QoS(rclcpp::KeepLast(2000)), pose_callback);
+    auto sub_extrinsic    = n->create_subscription<nav_msgs::msg::Odometry>("/extrinsic", rclcpp::QoS(rclcpp::KeepLast(2000)), extrinsic_callback);
+    auto sub_point        = n->create_subscription<sensor_msgs::msg::PointCloud>("/keyframe_point", rclcpp::QoS(rclcpp::KeepLast(2000)), point_callback);
+    auto sub_margin_point = n->create_subscription<sensor_msgs::msg::PointCloud>("/margin_cloud", rclcpp::QoS(rclcpp::KeepLast(2000)), margin_point_callback);
 
 
     pub_match_img          = n->create_publisher<sensor_msgs::msg::Image>("match_image", 1000);

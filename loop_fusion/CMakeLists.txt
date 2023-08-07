@@ -17,6 +17,7 @@ find_package(cv_bridge REQUIRED)
 find_package(camera_models REQUIRED)
 
 find_package(OpenCV)
+set(Ceres_DIR "/usr/local/ceres/2.1.0/lib/cmake/Ceres") 
 find_package(Ceres REQUIRED)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(Eigen3)
@@ -55,6 +56,10 @@ install(
   DESTINATION lib/${PROJECT_NAME}
 )
 
+install(
+  DIRECTORY support_files
+  DESTINATION share
+)
 
 
 #install(TARGETS

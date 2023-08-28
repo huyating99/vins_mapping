@@ -53,7 +53,13 @@ void registerPub(rclcpp::Node::SharedPtr n)
 void pubLatestOdometry(const Eigen::Vector3d &P, const Eigen::Quaterniond &Q, const Eigen::Vector3d &V, double t)
 {
     nav_msgs::msg::Odometry odometry;
-    odometry.header.stamp = rclcpp::Time(t);
+    // fix time error
+    // odometry.header.stamp = rclcpp::Time(t);
+    int sec_ts = (int)t;
+    uint nsec_ts = (uint)((t - sec_ts) * 1e9);
+    odometry.header.stamp.sec = sec_ts;
+    odometry.header.stamp.nanosec = nsec_ts;
+
     odometry.header.frame_id = "world";
     odometry.pose.pose.position.x = P.x();
     odometry.pose.pose.position.y = P.y();
@@ -72,7 +78,12 @@ void pubTrackImage(const cv::Mat &imgTrack, const double t)
 {
     std_msgs::msg::Header header;
     header.frame_id = "world";
-    header.stamp = rclcpp::Time(t);
+    // fix time error
+    // header.stamp = rclcpp::Time(t);
+    int sec_ts = (int)t;
+    uint nsec_ts = (uint)((t - sec_ts) * 1e9);
+    header.stamp.sec = sec_ts;
+    header.stamp.nanosec = nsec_ts;
     // sensor_msgs::msg::ImagePtr 
     sensor_msgs::msg::Image::SharedPtr imgTrackMsg = cv_bridge::CvImage(header, "bgr8", imgTrack).toImageMsg();
     pub_image_track->publish(*imgTrackMsg);
@@ -306,85 +317,85 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::msg::Header &head
 
 void pubTF(const Estimator &estimator, const std_msgs::msg::Header &header)
 {
-    return; // tmp.
+    // return; // tmp.
 
 
-    cout << "tf 1" << endl;
+    // cout << "tf 1" << endl;
     if( estimator.solver_flag != Estimator::SolverFlag::NON_LINEAR)
         return;
 
-    std::shared_ptr<tf2_ros::TransformBroadcaster> br;
-    geometry_msgs::msg::TransformStamped transform, transform_cam;
+    // std::shared_ptr<tf2_ros::TransformBroadcaster> br;
+    // geometry_msgs::msg::TransformStamped transform, transform_cam;
 
-    tf2::Quaternion q;
-    // body frame
-    Vector3d correct_t;
-    Quaterniond correct_q;
+    // tf2::Quaternion q;
+    // // body frame
+    // Vector3d correct_t;
+    // Quaterniond correct_q;
     
-    cout << "tf 2" << endl;
-    correct_t = estimator.Ps[WINDOW_SIZE];
-    correct_q = estimator.Rs[WINDOW_SIZE];
+    // cout << "tf 2" << endl;
+    // correct_t = estimator.Ps[WINDOW_SIZE];
+    // correct_q = estimator.Rs[WINDOW_SIZE];
 
-    cout << "tf 3" << endl;
+    // cout << "tf 3" << endl;
 
     
-    cout << header.stamp.sec + header.stamp.nanosec * (1e-9) << endl;
-    cout << correct_t << endl;
-    cout << correct_q.w() << " " << correct_q.x() << " " << correct_q.y() << " " << correct_q.z() << endl;
+    // cout << header.stamp.sec + header.stamp.nanosec * (1e-9) << endl;
+    // cout << correct_t << endl;
+    // cout << correct_q.w() << " " << correct_q.x() << " " << correct_q.y() << " " << correct_q.z() << endl;
 
 
-    // transform.header.stamp = header.stamp;
-    transform.header.frame_id = "world";
-    transform.child_frame_id = "body";
+    // // transform.header.stamp = header.stamp;
+    // transform.header.frame_id = "world";
+    // transform.child_frame_id = "body";
 
-    transform.transform.translation.x = correct_t(0);
-    transform.transform.translation.y = correct_t(1);
-    transform.transform.translation.z = correct_t(2);
+    // transform.transform.translation.x = correct_t(0);
+    // transform.transform.translation.y = correct_t(1);
+    // transform.transform.translation.z = correct_t(2);
 
-    cout << "tf 4" << endl;
-
-
-    q.setW(correct_q.w());
-    q.setX(correct_q.x());
-    q.setY(correct_q.y());
-    q.setZ(correct_q.z());
-    transform.transform.rotation.x = q.x();
-    transform.transform.rotation.y = q.y();
-    transform.transform.rotation.z = q.z();
-    transform.transform.rotation.w = q.w();
-
-    cout << "tf 5" << endl;
-
-    br->sendTransform(transform);
+    // cout << "tf 4" << endl;
 
 
-    cout << "tf 6" << endl;
+    // q.setW(correct_q.w());
+    // q.setX(correct_q.x());
+    // q.setY(correct_q.y());
+    // q.setZ(correct_q.z());
+    // transform.transform.rotation.x = q.x();
+    // transform.transform.rotation.y = q.y();
+    // transform.transform.rotation.z = q.z();
+    // transform.transform.rotation.w = q.w();
+
+    // cout << "tf 5" << endl;
+
+    // br->sendTransform(transform);
+
+
+    // cout << "tf 6" << endl;
 
 
 
-    // camera frame
-    transform_cam.header.stamp = header.stamp;
-    transform_cam.header.frame_id = "body";
-    transform_cam.child_frame_id = "camera";
+    // // camera frame
+    // transform_cam.header.stamp = header.stamp;
+    // transform_cam.header.frame_id = "body";
+    // transform_cam.child_frame_id = "camera";
 
 
-    transform_cam.transform.translation.x = estimator.tic[0].x();
-    transform_cam.transform.translation.y = estimator.tic[0].y();
-    transform_cam.transform.translation.z = estimator.tic[0].z();
+    // transform_cam.transform.translation.x = estimator.tic[0].x();
+    // transform_cam.transform.translation.y = estimator.tic[0].y();
+    // transform_cam.transform.translation.z = estimator.tic[0].z();
 
-    q.setW(Quaterniond(estimator.ric[0]).w());
-    q.setX(Quaterniond(estimator.ric[0]).x());
-    q.setY(Quaterniond(estimator.ric[0]).y());
-    q.setZ(Quaterniond(estimator.ric[0]).z());
+    // q.setW(Quaterniond(estimator.ric[0]).w());
+    // q.setX(Quaterniond(estimator.ric[0]).x());
+    // q.setY(Quaterniond(estimator.ric[0]).y());
+    // q.setZ(Quaterniond(estimator.ric[0]).z());
 
-    transform_cam.transform.rotation.x = q.x();
-    transform_cam.transform.rotation.y = q.y();
-    transform_cam.transform.rotation.z = q.z();
-    transform_cam.transform.rotation.w = q.w();
+    // transform_cam.transform.rotation.x = q.x();
+    // transform_cam.transform.rotation.y = q.y();
+    // transform_cam.transform.rotation.z = q.z();
+    // transform_cam.transform.rotation.w = q.w();
 
-    // br->sendTransform(transform_cam);
+    // // br->sendTransform(transform_cam);
 
-    cout << "tf 7" << endl;
+    // cout << "tf 7" << endl;
 
     
     nav_msgs::msg::Odometry odometry;
@@ -399,9 +410,9 @@ void pubTF(const Estimator &estimator, const std_msgs::msg::Header &header)
     odometry.pose.pose.orientation.z = tmp_q.z();
     odometry.pose.pose.orientation.w = tmp_q.w();
 
-    cout << "tf 8" << endl;
+    // cout << "tf 8" << endl;
     pub_extrinsic->publish(odometry);
-    cout << "tf 9" << endl;
+    // cout << "tf 9" << endl;
 
 }
 
@@ -469,7 +480,12 @@ void pubKeyframe(const Estimator &estimator)
         Quaterniond R = Quaterniond(estimator.Rs[i]);
 
         nav_msgs::msg::Odometry odometry;
-        odometry.header.stamp = rclcpp::Time(estimator.Headers[WINDOW_SIZE - 2] * 1e9);
+        // odometry.header.stamp = rclcpp::Time(estimator.Headers[WINDOW_SIZE - 2] * 1e9);
+        // fix time error
+        int sec_ts = (int)estimator.Headers[WINDOW_SIZE - 2];
+        uint nsec_ts = (uint)((estimator.Headers[WINDOW_SIZE - 2] - sec_ts) * 1e9);
+        odometry.header.stamp.sec = sec_ts;
+        odometry.header.stamp.nanosec = nsec_ts;
         // cout << "estimator.Headers[WINDOW_SIZE - 2]: " << estimator.Headers[WINDOW_SIZE - 2] << endl;
         // cout << "pubKeyframe header.stamp.sec: " << odometry.header.stamp.sec << endl;
         // cout << "pubKeyframe header.stamp.nanosec: " << odometry.header.stamp.nanosec << endl;
@@ -487,7 +503,12 @@ void pubKeyframe(const Estimator &estimator)
 
 
         sensor_msgs::msg::PointCloud point_cloud;
-        point_cloud.header.stamp = rclcpp::Time(estimator.Headers[WINDOW_SIZE - 2]*1e9);
+        // fix time error
+        // point_cloud.header.stamp = rclcpp::Time(estimator.Headers[WINDOW_SIZE - 2]*1e9);
+        sec_ts = (int)estimator.Headers[WINDOW_SIZE - 2];
+        nsec_ts = (uint)((estimator.Headers[WINDOW_SIZE - 2] - sec_ts) * 1e9);
+        point_cloud.header.stamp.sec = sec_ts;
+        point_cloud.header.stamp.nanosec = nsec_ts;
         // cout << "----estimator.Headers[WINDOW_SIZE - 2]: " << estimator.Headers[WINDOW_SIZE - 2] << endl;
         // cout << "----pubKeyframe header.stamp.sec: " << point_cloud.header.stamp.sec << endl;
         // cout << "----pubKeyframe header.stamp.nanosec: " << point_cloud.header.stamp.nanosec << endl;

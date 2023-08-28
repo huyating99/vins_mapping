@@ -22,20 +22,26 @@
 ```bash
 chmod +x realsense_install.sh
 bash realsense_install.sh
-- or you can install it by apt refer to wiki
 ```
-
+- or you can install it by apt refer to wiki
 
 ### build
 ```bash
 cd $(PATH_TO_YOUR_ROS2_WS)/src
 git clone https://github.com/huyating99/vins_mapping
 cd ..
-edit Ceres_Dir and output_path in yaml
+Edit Ceres_Dir in CMakeList.txt 
+Edit output_path in vins_mapping/config yaml
+Edit launch file in vins_mapping/vins/launch file
 colcon build --symlink-install && source ./install/setup.bash && source ./install/local_setup.bash
 ```
 
-### run
+### launch to test euroc dataset
+```bash
+ros2 launch vins $(YOUR_VINS_LAUNCH_FILE)
+```
+
+### run in every terminal
 ```bash
 # vins
 ros2 run vins vins_node $(PATH_TO_YOUR_VINS_CONFIG_FILE)
@@ -49,10 +55,8 @@ ros2 run rviz2 rviz2 -dvins_rviz_config_loop.rviz
 # rosbag play 
 ros2 bag play MH_01_easy.db3
 ```
-# rosbag record 
-ros2 bag record -o rs_rb5_room /camera aligned_depth_to_color/image_raw /camera/aligned_depth_to_color/camera_info /camera/color/image_raw /camera/imu /tf
 
-## play bag recorded at ROS1
+### play bag recorded at ROS1
 Unfortunately, you can't just play back the bag file recorded at ROS1. 
 This is because the filesystem structure for bag file has been changed significantly.
 The bag file at ROS2 needs the folder with some meta data for each bag file, which is done using following commands.
@@ -60,14 +64,20 @@ The bag file at ROS2 needs the folder with some meta data for each bag file, whi
 ```bash
 pip install rosbags
 ```
-
-# draw traj using evo
-evo_traj tum ./rs_rb5_office_01_vio.csv --ref=./rs_rb5_office_01_vio_loop.csv -p --plot_mode=xyz -a --save_table rs_rb5_office_01
-
 - run
 ```bash
 export PATH=$PATH:~/.local/bin
 rosbags-convert foo.bag --dst /path/to/bar
+```
+
+### ros2bag record 
+```bash
+ros2 bag record -o rs_rb5_room /camera aligned_depth_to_color/image_raw /camera/aligned_depth_to_color/camera_info /camera/color/image_raw /camera/imu /tf
+```
+
+### draw traj using evo
+```bash
+evo_traj tum ./rs_rb5_office_01_vio.csv --ref=./rs_rb5_office_01_vio_loop.csv -p --plot_mode=xyz -a --save_table rs_rb5_office_01
 ```
 
 ## Original Readme:

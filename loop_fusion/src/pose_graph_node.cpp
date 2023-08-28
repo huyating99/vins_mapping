@@ -33,7 +33,6 @@
 #include "utility/tic_toc.h"
 #include "pose_graph.h"
 #include "utility/CameraPoseVisualization.h"
-// #include "camodocal/camera_models/CameraFactory.h"
 #include "parameters.h"
 #define SKIP_FIRST_CNT 10
 using namespace std;
@@ -301,6 +300,7 @@ void process()
         }
         m_buf.unlock();
 
+        //diff
         if (pose_msg != NULL && image_msg != NULL && point_msg != NULL)
         {
             // cout << "get information!" << endl;
@@ -498,6 +498,7 @@ int main(int argc, char **argv)
         load_flag = 1;
     }
 
+    //diff
     auto sub_vio          = n->create_subscription<nav_msgs::msg::Odometry>("/odometry", rclcpp::QoS(rclcpp::KeepLast(2000)), vio_callback);
     auto sub_image        = n->create_subscription<sensor_msgs::msg::Image>(IMAGE_TOPIC, rclcpp::QoS(rclcpp::KeepLast(2000)), image_callback);
     auto sub_pose         = n->create_subscription<nav_msgs::msg::Odometry>("/keyframe_pose", rclcpp::QoS(rclcpp::KeepLast(2000)), pose_callback);

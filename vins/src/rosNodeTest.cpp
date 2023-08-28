@@ -240,7 +240,7 @@ void cam_switch_callback(const std_msgs::msg::Bool::SharedPtr switch_msg)
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
-	auto n = rclcpp::Node::make_shared("vins_estimator");
+    auto n = rclcpp::Node::make_shared("vins_estimator");
     // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
 
     if(argc != 2)

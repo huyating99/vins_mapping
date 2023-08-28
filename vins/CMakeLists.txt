@@ -84,8 +84,8 @@ install(
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY config
-  DESTINATION share/${PROJECT_NAME})
+# install(DIRECTORY config
+#   DESTINATION share/${PROJECT_NAME})
 
 # Install binaries
 #install(TARGETS vins_node kitti_odom_test kitti_gps_test vins_lib
@@ -95,12 +95,9 @@ install(DIRECTORY config
 #)
 
 # Install launch files
-#install(DIRECTORY
-#    launch
-#    # config
-#    # rviz
-#    DESTINATION share/${PROJECT_NAME}
-#    )
-
+install(DIRECTORY
+   launch
+   DESTINATION share/${PROJECT_NAME}
+   )
 
 ament_package()

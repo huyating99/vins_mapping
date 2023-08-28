@@ -261,6 +261,15 @@ void KeyFrame::PnPRANSAC(const vector<cv::Point2f> &matched_2d_old_norm,
     cv::cv2eigen(t, T_pnp);
     T_w_c_old = R_w_c_old * (-T_pnp);
 
+	// fix loop problem
+	// cout << std::fixed << std::setprecision( 5 );
+	// cout << "T_w_c_old " << T_w_c_old.transpose() << endl;
+	// Eigen::Quaterniond q(R_w_c_old);
+	// cout << "R_w_c_old " << q.w() << " " << q.vec().transpose() << endl;
+	// cout << "tic " << tic.transpose() << endl;
+	// Eigen::Quaterniond qq(qic);
+	// cout << "qic " << qq.w() << " " << qq.vec().transpose() << endl;
+	
     PnP_R_old = R_w_c_old * qic.transpose();
     PnP_T_old = T_w_c_old - PnP_R_old * tic;
 
@@ -474,7 +483,12 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
 	            	cv::resize(loop_match_img, thumbimage, cv::Size(loop_match_img.cols / 2, loop_match_img.rows / 2));
 	    	    	// sensor_msgs::msg::ImagePtr
 					sensor_msgs::msg::Image::SharedPtr msg = cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", thumbimage).toImageMsg();
-	                msg->header.stamp = rclcpp::Time(time_stamp);
+	                // fix time error
+					// msg->header.stamp = rclcpp::Time(time_stamp*(1e9));
+					int sec_ts = (int)time_stamp;
+					uint nsec_ts = (uint)((time_stamp - sec_ts) * 1e9);
+					msg->header.stamp.sec = sec_ts;
+					msg->header.stamp.nanosec = nsec_ts;
 	    	    	pub_match_img->publish(*msg);
 	            }
 	        }
@@ -483,6 +497,15 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
 
 	if ((int)matched_2d_cur.size() > MIN_LOOP_NUM)
 	{
+		// fix loop problem
+		// cout << std::fixed << std::setprecision( 5 );
+	    // cout << "PnP_T_old " << PnP_T_old.transpose() << endl;
+		// Eigen::Quaterniond q(PnP_R_old);
+	    // cout << "PnP_R_old " << q.w() << " " << q.vec().transpose() << endl;
+		// cout << "origin_vio_T " << origin_vio_T.transpose() << endl;
+		// Eigen::Quaterniond qq(origin_vio_R);
+	    // cout << "origin_vio_R " << qq.w() << " " << qq.vec().transpose() << endl;
+
 	    relative_t = PnP_R_old.transpose() * (origin_vio_T - PnP_T_old);
 	    relative_q = PnP_R_old.transpose() * origin_vio_R;
 	    relative_yaw = Utility::normalizeAngle(Utility::R2ypr(origin_vio_R).x() - Utility::R2ypr(PnP_R_old).x());
@@ -497,12 +520,13 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
 	    	loop_info << relative_t.x(), relative_t.y(), relative_t.z(),
 	    	             relative_q.w(), relative_q.x(), relative_q.y(), relative_q.z(),
 	    	             relative_yaw;
-	    	//cout << "pnp relative_t " << relative_t.transpose() << endl;
-	    	//cout << "pnp relative_q " << relative_q.w() << " " << relative_q.vec().transpose() << endl;
+			// cout << std::fixed << std::setprecision( 5 );
+	    	// cout << "pnp relative_t " << relative_t.transpose() << endl;
+	    	// cout << "pnp relative_q " << relative_q.w() << " " << relative_q.vec().transpose() << endl;
 	        return true;
 	    }
 	}
-	//printf("loop final use num %d %lf--------------- \n", (int)matched_2d_cur.size(), t_match.toc());
+	// printf("loop final use num %d %lf--------------- \n", (int)matched_2d_cur.size(), t_match.toc());
 	return false;
 }
 

@@ -100,14 +100,14 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
     }
 	if (loop_index != -1)
 	{
-        //printf(" %d detect loop with %d \n", cur_kf->index, loop_index);
+        // printf("Dbow: %d detect loop with %d \n", cur_kf->index, loop_index);
         KeyFrame* old_kf = getKeyFrame(loop_index);
 
         if (cur_kf->findConnection(old_kf))
         {
             if (earliest_loop_index > loop_index || earliest_loop_index == -1)
                 earliest_loop_index = loop_index;
-
+            
             Vector3d w_P_old, w_P_cur, vio_P_cur;
             Matrix3d w_R_old, w_R_cur, vio_R_cur;
             old_kf->getVioPose(w_P_old, w_R_old);
@@ -167,7 +167,13 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
     cur_kf->updatePose(P, R);
     Quaterniond Q{R};
     geometry_msgs::msg::PoseStamped pose_stamped;
-    pose_stamped.header.stamp = rclcpp::Time(cur_kf->time_stamp*(1e9));
+    // fix time error
+    // pose_stamped.header.stamp = rclcpp::Time(cur_kf->time_stamp*(1e9));
+    int sec_ts = (int)cur_kf->time_stamp;
+    uint nsec_ts = (uint)((cur_kf->time_stamp - sec_ts) * 1e9);
+    pose_stamped.header.stamp.sec = sec_ts;
+    pose_stamped.header.stamp.nanosec = nsec_ts;
+
     pose_stamped.header.frame_id = "world";
     pose_stamped.pose.position.x = P.x() + VISUALIZATION_SHIFT_X;
     pose_stamped.pose.position.y = P.y() + VISUALIZATION_SHIFT_Y;
@@ -183,16 +189,17 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
     {
         ofstream loop_path_file(VINS_RESULT_PATH, ios::app);
         loop_path_file.setf(ios::fixed, ios::floatfield);
-        loop_path_file.precision(5);
+        loop_path_file.precision(6);
         loop_path_file << cur_kf->time_stamp << " ";
-        loop_path_file.precision(5);
+        loop_path_file.precision(6);
         loop_path_file  << P.x() << " "
               << P.y() << " "
               << P.z() << " "
               << Q.w() << " "
               << Q.x() << " "
               << Q.y() << " "
-              << Q.z() << endl;
+              << Q.z() 
+              << endl;
         loop_path_file.close();
     }
     //draw local connection
@@ -270,7 +277,14 @@ void PoseGraph::loadKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
     cur_kf->getPose(P, R);
     Quaterniond Q{R};
     geometry_msgs::msg::PoseStamped pose_stamped;
-    pose_stamped.header.stamp = rclcpp::Time(cur_kf->time_stamp);
+    // fix time error
+    // pose_stamped.header.stamp = rclcpp::Time(cur_kf->time_stamp*(1e9));
+    int sec_ts = (int)cur_kf->time_stamp;
+    uint nsec_ts = (uint)((cur_kf->time_stamp - sec_ts) * 1e9);
+    pose_stamped.header.stamp.sec = sec_ts;
+    pose_stamped.header.stamp.nanosec = nsec_ts;
+
+
     pose_stamped.header.frame_id = "world";
     pose_stamped.pose.position.x = P.x() + VISUALIZATION_SHIFT_X;
     pose_stamped.pose.position.y = P.y() + VISUALIZATION_SHIFT_Y;
@@ -805,7 +819,13 @@ void PoseGraph::updatePath()
 //        printf("path p: %f, %f, %f\n",  P.x(),  P.z(),  P.y() );
 
         geometry_msgs::msg::PoseStamped pose_stamped;
-        pose_stamped.header.stamp = rclcpp::Time(((*it)->time_stamp)*(1e9));
+        // fix time error
+        // pose_stamped.header.stamp = rclcpp::Time(((*it)->time_stamp)*(1e9));
+        int sec_ts = (int)(*it)->time_stamp;
+        uint nsec_ts = (uint)(((*it)->time_stamp - sec_ts) * 1e9);
+        pose_stamped.header.stamp.sec = sec_ts;
+        pose_stamped.header.stamp.nanosec = nsec_ts;
+
         pose_stamped.header.frame_id = "world";
         pose_stamped.pose.position.x = P.x() + VISUALIZATION_SHIFT_X;
         pose_stamped.pose.position.y = P.y() + VISUALIZATION_SHIFT_Y;
@@ -829,9 +849,9 @@ void PoseGraph::updatePath()
         {
             ofstream loop_path_file(VINS_RESULT_PATH, ios::app);
             loop_path_file.setf(ios::fixed, ios::floatfield);
-            loop_path_file.precision(5);
-            loop_path_file << (*it)->time_stamp << " ";
-            loop_path_file.precision(5);
+            loop_path_file.precision(6);
+            loop_path_file << (*it)->time_stamp<< " ";
+            loop_path_file.precision(6);
             loop_path_file  << P.x() << " "
                   << P.y() << " "
                   << P.z() << " "

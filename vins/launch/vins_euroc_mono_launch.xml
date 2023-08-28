@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+    <let name="rviz_config" value="$(find-pkg-share vins)/config/vins_rviz_config_loop.rviz"/>
+    <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)"/>
+
+    <arg name="vins_config" default="/home/hu/intern/ros2_ws/src/vins_mapping/config/euroc/euroc_mono_imu_config.yaml"/>
+    <executable cmd="ros2 run vins vins_node $(var vins_config)"/>
+    <executable cmd="ros2 run loop_fusion loop_fusion_node $(var vins_config)"/>
+
+    <!-- <arg name="euroc_config" default="/media/hu/YOUAREGOOD/dataset/MH_01_easy/MH_01_easy.db3"/> -->
+    <!-- <arg name="euroc_config" default="/media/hu/YOUAREGOOD/dataset/MH_03_medium/MH_03_medium.db3"/> -->
+    <!-- <arg name="euroc_config" default="/media/hu/YOUAREGOOD/dataset/MH_04_difficult/MH_04_difficult.db3"/> -->
+    <!-- <arg name="euroc_config" default="/media/hu/YOUAREGOOD/dataset/V1_01_easy/V1_01_easy.db3"/> -->
+    <!-- <arg name="euroc_config" default="/media/hu/YOUAREGOOD/dataset/V1_02_medium/V1_02_medium.db3"/> -->
+
+    <arg name="euroc_config" default="/media/hu/FOREVER/A-dataset/Euroc/dataset/MH_01_easy/MH_01_easy.db3"/>
+    <!-- <arg name="euroc_config" default="/media/hu/FOREVER/A-dataset/Euroc/dataset/MH_03_medium/MH_03_medium.db3"/> -->
+    <!-- <arg name="euroc_config" default="/media/hu/FOREVER/A-dataset/Euroc/dataset/MH_04_difficult/MH_04_difficult.db3"/> -->
+    <!-- <arg name="euroc_config" default="/media/hu/FOREVER/A-dataset/Euroc/dataset/V1_01_easy/V1_01_easy.db3"/> -->
+    <!-- <arg name="euroc_config" default="/media/hu/FOREVER/A-dataset/Euroc/dataset/V1_02_medium/V1_02_medium.db3"/> -->
+    <!-- <arg name="euroc_config" default="/media/hu/FOREVER/A-dataset/Euroc/dataset/V1_03_difficult/V1_03_difficult.db3"/> -->
+    <!-- <arg name="euroc_config" default="/media/hu/FOREVER/A-dataset/Euroc/dataset/V2_02_medium/V2_02_medium.db3"/> -->
+    <executable cmd="ros2 bag play $(var euroc_config)"/>
+        
+</launch>
